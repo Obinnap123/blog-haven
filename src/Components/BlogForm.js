@@ -148,6 +148,7 @@ const BlogForm = () => {
                       border: "1px solid rgb(240, 240, 240)",
                       borderRadius: "4px",
                       height: "5rem",
+                      fontSize: "16px",
                     }}
                     required
                   ></textarea>
@@ -163,26 +164,15 @@ const BlogForm = () => {
                       backgroundColor: "rgb(240, 240, 240)",
                       border: "1px solid rgb(240, 240, 240)",
                       borderRadius: "4px",
+                      fontSize: "16px",
                     }}
                     required
                   />
                 )}
               </div>
             ))}
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button
-                type="submit"
-                style={{
-                  backgroundColor: "black",
-                  color: "white",
-                  padding: "1rem 2rem",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Submit
-              </button>
+            <div className="button">
+              <button type="submit">Submit</button>
             </div>
           </form>
         </div>
