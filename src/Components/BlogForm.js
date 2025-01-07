@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const BlogForm = () => {
@@ -9,6 +9,22 @@ const BlogForm = () => {
     description: "",
   });
   const [blogs, setBlogs] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // For loading state
+
+  const API_URL = "https://blog-haven-production.up.railway.app/blog";
+
+  // Fetch blogs on component mount
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setBlogs(response.data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    };
+    fetchBlogs();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -20,6 +36,7 @@ const BlogForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Activate loading state
 
     const data = new FormData();
     data.append("image", formData.image);
@@ -28,20 +45,17 @@ const BlogForm = () => {
     data.append("description", formData.description);
 
     try {
-      const response = await axios.post(
-        "https://blog-haven-production.up.railway.app/blog",
-        data,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await axios.post(API_URL, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       const newBlog = {
         ...formData,
         image: URL.createObjectURL(formData.image),
         id: response.data.id,
       };
-      setBlogs([...blogs, newBlog]);
+
+      setBlogs([newBlog, ...blogs]);
       setFormData({
         image: null,
         title: "",
@@ -51,11 +65,19 @@ const BlogForm = () => {
     } catch (error) {
       console.error("Error creating blog:", error);
       alert("Failed to create blog. Please try again.");
+    } finally {
+      setIsSubmitting(false); // Reset loading state
     }
   };
 
-  const handleDelete = (id) => {
-    setBlogs(blogs.filter((blog) => blog.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setBlogs(blogs.filter((blog) => blog.id !== id));
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      alert("Failed to delete blog. Please try again.");
+    }
   };
 
   return (
@@ -83,7 +105,6 @@ const BlogForm = () => {
             border: "1px solid lightgray",
             borderRadius: "6px",
             padding: "1.5rem",
-            //   margin: "1rem 0",
           }}
         >
           <form onSubmit={handleSubmit}>
@@ -172,7 +193,21 @@ const BlogForm = () => {
               </div>
             ))}
             <div className="button">
-              <button type="submit">Submit</button>
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <div className="spinner"></div> Please wait...
+                  </div>
+                ) : (
+                  "Submit"
+                )}
+              </button>
             </div>
           </form>
         </div>
